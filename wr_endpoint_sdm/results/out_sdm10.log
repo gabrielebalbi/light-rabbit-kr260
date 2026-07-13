@@ -1,0 +1,24 @@
+
+ubuntu@kria:~$ sudo bash sdm_steer_test.sh
+== A) baseline (base=0) ==
+  sdm_base = 0 (richiesto 0)
+  sdm_word[24:18]=0  phy_rdy=1
+  FREQ_CNT=0x02FAF3D7 (status=0x00000001)  [tx clk atteso ~62.5e6; conta in 1s di pl_clk0]
+== B) DRP QPLL0 (la lettura 'impossibile' di ieri) ==
+  DRP[0x14] = 0x0000003E (rdy=0x00000001, poll=0)
+  DRP[0x11] = 0x00000FC0 (rdy=0x00000001, poll=0)
+  DRP[0x18] = 0x00000808 (rdy=0x00000001, poll=0)
+== C) STEERING: base = 2^22 (=+0.25 su frazione di N) ==
+  sdm_base = 4194304 (richiesto 4194304)
+  sdm_word[24:18]=15  phy_rdy=1
+  FREQ_CNT=0x02FAF3D7 (status=0x00000001)  [tx clk atteso ~62.5e6; conta in 1s di pl_clk0]
+== D) STEERING: base = 2^24-1 (fondo scala) ==
+  sdm_base = 16777215 (richiesto 16777215)
+  sdm_word[24:18]=62  phy_rdy=1
+  FREQ_CNT=0x02FAF3D7 (status=0x00000001)  [tx clk atteso ~62.5e6; conta in 1s di pl_clk0]
+== E) ripristino base=0 ==
+  sdm_base = 0 (richiesto 0)
+  sdm_word[24:18]=0  phy_rdy=1
+  FREQ_CNT=0x02FAF3D7 (status=0x00000001)  [tx clk atteso ~62.5e6; conta in 1s di pl_clk0]
+== Fine: se FREQ_CNT cambia con la base, lo steering SDM e' DIMOSTRATO ==
+ubuntu@kria:~$

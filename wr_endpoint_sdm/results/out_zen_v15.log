@@ -1,0 +1,133 @@
+==================================================================
+ TEST WR-ZEN (fw v15: DAC 20bit + bitslide + LED)  --  06:34:11
+ SETUP: >>> FIBRA VERSO WR-ZEN (SFP BiDi) <<<   (NON loopback!)
+==================================================================
+== reload app v15 (reset pulito del GT/PCS) ==
+remove from slot 0 returns: 0 (Ok)
+kr260_wr_sdm_app_v15: loaded to slot 0
+== UIO + timestamp (uio4/5/6 devono essere FRESCHI = programm. reale) ==
+  uio0: axi-pmon
+  uio1: axi-pmon
+  uio2: axi-pmon
+  uio3: axi-pmon
+  uio4: kr260_axi_wb_bridge
+  uio5: axi_iic_sfp
+  uio6: debug_bridge
+   0 15:40:36
+   1 15:40:35
+   2 15:40:35
+   3 15:40:36
+   4 06:34:13
+   5 06:34:13
+   6 06:34:13
+
+>>> GUARDA LA SCHEDA: LED2 (cage SFP) deve RESPIRARE ora = fabric vivo.
+
+== LASER on (il redeploy azzera il GPO) ==
+GPO[0] -> 1 (TX abilitato, presumibilmente). Verifica con read_sfp_ddm.py.
+GPO ora = 0x00000001
+== attesa 6 s boot wrc ==
+
+===== wrc# ptp stop =====
+ptp stop
+wrc# 
+
+===== wrc# mac set 00:11:22:33:44:55 =====
+mac set 00:11:22:33:44:55
+MAC-address: 00:11:22:33:44:55
+wrc# 
+== AUTONEG ON (mdio an 1): col partner reale l'AN deve completare ==
+
+===== wrc# mdio an 1 =====
+mdio an 1
+
+== bring-up: mode slave + ptp start ==
+
+===== wrc# mode slave =====
+mode slave
+wrc# 
+
+===== wrc# ptp start =====
+ptp start
+wrc# 
+== osservo link + freq/phase lock per ~2 min (12 letture x 8 s) ==
+   ATTESO: lnk:1 (UF2 fisso), poi pll stat con MFL1 e finalmente MPL1
+   (m_phase_lock_ms>0) -> a quel punto LED1 sulla cage si accende FISSO.
+----- lettura 1 (06:34:30) -----
+lnk:1 rx:6 tx:23 lock:1 ptp:listening sv:0 ss:'LINK_DOWN' sec:16 nsec:173499776 mu:0 dms:0 dtxm:0 drxm:0 dtxs:0 drxs:0 asym:0 crtt:0 cko:0 setp:0 ucnt:0 bslide:1600 hd:12142 md:524288 ad:0 
+     softpll: mode:freemaster seq:ready n_ref 1 n_out 1
+     irqs:115093 ext-align:0 DelCnt:0 setp:0 refcnt:54462 tagcnt:62600 MFL0 MPL0 MY:524288 m_kp:-1100 m_ki:-30 m_sh:8 HL1 HY=12156 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2708 m_freq_lock_ms:0 m_phase_lock_ms:0 main: en:0 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+----- lettura 2 (06:34:39) -----
+lnk:1 rx:42 tx:45 lock:0 ptp:uncalibrated sv:1 ss:'SYNC_TAI' sec:26 nsec:924318912 mu:839692 dms:419846 dtxm:0 drxm:0 dtxs:0 drxs:0 asym:0 crtt:839692 cko:-251604869 setp:0 ucnt:3 bslide:1600 hd:14753 md:624225 ad:0 
+wrc# lnk:1 rx:45 tx:46 lock:0 ptp:uncalibrated sv:1 ss:'SYNC_TAI' sec:27 nsec:231132416 mu:839692 dms:419846 dtxm:0 drxm:0 dtxs:0 drxs:0 asym:0 crtt:839692 cko:-251604869 setp:0 ucnt:4 bslide:1600 hd:14757 md:624216 ad:0 
+     softpll: mode:slave seq:ready n_ref 1 n_out 1
+     irqs:188773 ext-align:0 DelCnt:0 setp:661 refcnt:24935 tagcnt:24389 MFL1 MPL1 MY:624356 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14753 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2713 m_freq_lock_ms:674 m_phase_lock_ms:3597 main: en:1 ref:0 out:1 lck:1 freeze:0 gain_sched:1/1
+----- lettura 3 (06:34:50) -----
+lnk:1 rx:87 tx:74 lock:1 ptp:slave sv:1 ss:'SYNC_PHASE' sec:1728996776 nsec:162039168 mu:843665 dms:219896 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439793 cko:-170017344 setp:0 ucnt:6 bslide:1600 hd:14744 md:624401 ad:0 
+     softpll: mode:slave seq:ready n_ref 1 n_out 1
+     irqs:269947 ext-align:0 DelCnt:0 setp:17920 refcnt:66077 tagcnt:65532 MFL1 MPL1 MY:624450 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14749 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2713 m_freq_lock_ms:674 m_phase_lock_ms:3597 main: en:1 ref:0 out:1 lck:1 freeze:0 gain_sched:1/1
+----- lettura 4 (06:35:01) -----
+lnk:1 rx:123 tx:95 lock:1 ptp:slave sv:1 ss:'WAIT_OFFSET_STABLE' sec:1728996786 nsec:935542704 mu:843675 dms:219901 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439803 cko:1502 setp:15517 ucnt:9 bslide:1600 hd:14738 md:624644 ad:0 
+     softpll: mode:slave seq:ready n_ref 1 n_out 1
+     irqs:347489 ext-align:0 DelCnt:0 setp:15889 refcnt:107172 tagcnt:106627 MFL1 MPL1 MY:624665 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14738 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2713 m_freq_lock_ms:674 m_phase_lock_ms:3597 main: en:1 ref:0 out:1 lck:1 freeze:0 gain_sched:1/1
+----- lettura 5 (06:35:12) -----
+lnk:1 rx:159 tx:119 lock:1 ptp:slave sv:1 ss:'TRACK_PHASE' sec:1728996797 nsec:799681520 mu:843672 dms:219900 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439800 cko:2 setp:15517 ucnt:18 bslide:1600 hd:14729 md:624991 ad:0 
+     softpll: mode:slave seq:ready n_ref 1 n_out 1
+     irqs:406820 ext-align:0 DelCnt:0 setp:15889 refcnt:148614 tagcnt:148069 MFL1 MPL1 MY:625022 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14727 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2713 m_freq_lock_ms:674 m_phase_lock_ms:3597 main: en:1 ref:0 out:1 lck:1 freeze:0 gain_sched:1/1
+----- lettura 6 (06:35:23) -----
+lnk:1 rx:194 tx:140 lock:1 ptp:slave sv:1 ss:'TRACK_PHASE' sec:1728996808 nsec:576701856 mu:843668 dms:219898 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439796 cko:3 setp:15517 ucnt:24 bslide:1600 hd:14729 md:625395 ad:0 
+     softpll: mode:slave seq:ready n_ref 1 n_out 1
+     irqs:465753 ext-align:0 DelCnt:0 setp:15889 refcnt:189719 tagcnt:189174 MFL1 MPL1 MY:625398 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14741 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2713 m_freq_lock_ms:674 m_phase_lock_ms:3597 main: en:1 ref:0 out:1 lck:1 freeze:0 gain_sched:1/1
+----- lettura 7 (06:35:34) -----
+lnk:1 rx:235 tx:165 lock:1 ptp:slave sv:1 ss:'TRACK_PHASE' sec:1728996819 nsec:379618176 mu:843676 dms:219902 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439804 cko:0 setp:15518 ucnt:33 bslide:1600 hd:14725 md:625580 ad:0 
+     softpll: mode:slave seq:ready n_ref 1 n_out 1
+     irqs:523797 ext-align:0 DelCnt:0 setp:15890 refcnt:230929 tagcnt:230384 MFL1 MPL1 MY:625596 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14731 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2713 m_freq_lock_ms:674 m_phase_lock_ms:3597 main: en:1 ref:0 out:1 lck:1 freeze:0 gain_sched:1/1
+----- lettura 8 (06:35:45) -----
+lnk:1 rx:272 tx:187 lock:1 ptp:slave sv:1 ss:'TRACK_PHASE' sec:1728996830 nsec:131289872 mu:843678 dms:219903 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439806 cko:-1 setp:15518 ucnt:40 bslide:1600 hd:14737 md:625817 ad:0 
+     softpll: mode:slave seq:ready n_ref 1 n_out 1
+     irqs:581441 ext-align:0 DelCnt:0 setp:15890 refcnt:271973 tagcnt:271428 MFL1 MPL1 MY:625836 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14728 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2713 m_freq_lock_ms:674 m_phase_lock_ms:3597 main: en:1 ref:0 out:1 lck:1 freeze:0 gain_sched:1/1
+----- lettura 9 (06:35:55) -----
+lnk:1 rx:313 tx:214 lock:1 ptp:slave sv:1 ss:'TRACK_PHASE' sec:1728996840 nsec:891680480 mu:843686 dms:219907 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439814 cko:5 setp:15519 ucnt:49 bslide:1600 hd:14721 md:626220 ad:0 
+wrc# lnk:1 rx:314 tx:215 lock:1 ptp:slave sv:1 ss:'TRACK_PHASE' sec:1728996840 nsec:934056912 mu:843672 dms:219900 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439800 cko:1 setp:15519 ucnt:50 bslide:1600 hd:14731 md:626243 ad:0 
+     softpll: mode:slave seq:ready n_ref 1 n_out 1
+     irqs:639519 ext-align:0 DelCnt:0 setp:15891 refcnt:313061 tagcnt:312516 MFL1 MPL1 MY:626243 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14736 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2713 m_freq_lock_ms:674 m_phase_lock_ms:3597 main: en:1 ref:0 out:1 lck:1 freeze:0 gain_sched:1/1
+----- lettura 10 (06:36:06) -----
+lnk:1 rx:351 tx:239 lock:1 ptp:slave sv:1 ss:'TRACK_PHASE' sec:1728996851 nsec:754316864 mu:843677 dms:219902 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439805 cko:-1 setp:15518 ucnt:59 bslide:1600 hd:14737 md:626392 ad:0 
+     softpll: mode:slave seq:ready n_ref 1 n_out 1
+     irqs:696852 ext-align:0 DelCnt:0 setp:15890 refcnt:354422 tagcnt:353877 MFL1 MPL1 MY:626395 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14728 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2713 m_freq_lock_ms:674 m_phase_lock_ms:3597 main: en:1 ref:0 out:1 lck:1 freeze:0 gain_sched:1/1
+----- lettura 11 (06:36:17) -----
+lnk:1 rx:389 tx:262 lock:1 ptp:slave sv:1 ss:'TRACK_PHASE' sec:1728996862 nsec:505806112 mu:843679 dms:219903 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439807 cko:0 setp:15518 ucnt:66 bslide:1600 hd:14736 md:626633 ad:0 
+wrc# lnk:1 rx:391 tx:264 lock:1 ptp:slave sv:1 ss:'TRACK_PHASE' sec:1728996862 nsec:756321296 mu:843678 dms:219903 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439806 cko:1 setp:15518 ucnt:67 bslide:1600 hd:14722 md:626624 ad:0 
+     softpll: mode:slave seq:ready n_ref 1 n_out 1
+     irqs:755627 ext-align:0 DelCnt:0 setp:15890 refcnt:396289 tagcnt:395744 MFL1 MPL1 MY:626621 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14733 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2713 m_freq_lock_ms:674 m_phase_lock_ms:3597 main: en:1 ref:0 out:1 lck:1 freeze:0 gain_sched:1/1
+----- lettura 12 (06:36:28) -----
+lnk:1 rx:425 tx:285 lock:1 ptp:slave sv:1 ss:'TRACK_PHASE' sec:1728996873 nsec:481039856 mu:843671 dms:219899 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439799 cko:0 setp:15518 ucnt:73 bslide:1600 hd:14723 md:626973 ad:0 
+     softpll: mode:slave seq:ready n_ref 1 n_out 1
+     irqs:813516 ext-align:0 DelCnt:0 setp:15890 refcnt:437305 tagcnt:436760 MFL1 MPL1 MY:627010 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14733 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2713 m_freq_lock_ms:674 m_phase_lock_ms:3597 main: en:1 ref:0 out:1 lck:1 freeze:0 gain_sched:1/1
+== stato PTP finale (atteso ptp:slave -> TRACK_PHASE se MPL1) ==
+lnk:1 rx:464 tx:310 lock:1 ptp:slave sv:1 ss:'TRACK_PHASE' sec:1728996884 nsec:233710336 mu:843673 dms:219900 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439801 cko:0 setp:15519 ucnt:82 bslide:1600 hd:14726 md:627330 ad:0 
+== MDIO dump finale (ANLPAR = cosa dichiara lo ZEN) ==
+
+===== wrc# mdio dump =====
+mdio dump
+  MDIO[0x00] MCR     = 0x1140
+  MDIO[0x04] MSR     = 0x01ac
+  MDIO[0x10] ANAR    = 0x0020
+  MDIO[0x14] ANLPAR  = 0x41a0
+  MDIO[0x40] WRSPEC  = 0x0020
+wrc# lnk:1 rx:467 tx:312 lock:1 ptp:slave sv:1 ss:'TRACK_PHASE' sec:1728996885 nsec:174762288 mu:843672 dms:219900 dtxm:146614 drxm:255658 dtxs:0 drxs:1600 asym:0 crtt:439800 cko:-4 setp:15518 ucnt:83 bslide:1600 hd:14732 md:627319 ad:0 
+
+== pll stat finale ==
+
+===== wrc# pll stat =====
+pll stat
+softpll: mode:slave seq:ready n_ref 1 n_out 1
+irqs:881432 ext-align:0 DelCnt:0 setp:15890 refcnt:485632 tagcnt:485087 MFL1 MPL1 MY:627394 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14733 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2713 m_freq_lock_ms:674 m_phase_lock_ms:3597 main: en:1 ref:0 out:1 lck:1 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 1 phase 15889 (15516 ps) avg 512
+wrc# 
+==================================================================
+ ESITO ATTESO SUCCESSO: pll stat mostra 'MFL1 MPL1', m_phase_lock_ms>0,
+ md (uscita DAC) fermo entro poche unita', ptp:slave in TRACK_PHASE, lock:1.
+ Sulla scheda: LED1 (cage) FISSO, UF2 fisso, UF1 lampeggia 1/s.
+ Se MFL1 ma MPL0 persistente -> attivare il BLOCCO FALLBACK (pll gain shift 16+).
+== FINE test ZEN v15 ==

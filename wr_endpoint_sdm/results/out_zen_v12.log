@@ -1,0 +1,99 @@
+==================================================================
+ TEST WR-ZEN (fw v12, autoneg ON)  —  11:50:04
+ SETUP: FIBRA VERSO WR-ZEN (SFP BiDi)
+==================================================================
+== reload app v12 (reset pulito del GT/PCS) ==
+remove from slot 0 returns: 0 (Ok)
+kr260_wr_sdm: loaded to slot 0
+== UIO + timestamp ==
+  uio0: axi-pmon
+  uio1: axi-pmon
+  uio2: axi-pmon
+  uio3: axi-pmon
+  uio4: kr260_axi_wb_bridge
+  uio5: axi_iic_sfp
+  uio6: debug_bridge
+   0 15:40:35
+   1 15:40:34
+   2 15:40:34
+   3 15:40:35
+   4 11:50:06
+   5 11:50:06
+   6 11:50:06
+== LASER on (il redeploy azzera il GPO) ==
+GPO[0] -> 1 (TX abilitato, presumibilmente). Verifica con read_sfp_ddm.py.
+GPO ora = 0x00000001
+== attesa 6 s boot wrc; sanity ==
+
+===== wrc# ptp stop =====
+ptp stop
+wrc# 
+
+===== wrc# mac set 00:11:22:33:44:55 =====
+mac set 00:11:22:33:44:55
+MAC-address: 00:11:22:33:44:55
+wrc# 
+== AUTONEG ON (mdio an 1): col partner l'AN deve completare ==
+
+===== wrc# mdio an 1 =====
+mdio an 1
+
+== bring-up: mode slave + ptp start ==
+
+===== wrc# mode slave =====
+mode slave
+wrc# 
+
+===== wrc# ptp start =====
+ptp start
+wrc# 
+== osservo il link/PTP per ~40 s (5 letture) ==
+----- lettura 1 (11:50:23) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:6 tx:23 lock:1 ptp:listening sv:0 ss:'LINK_DOWN' sec:16 nsec:339378880 mu:0 dms:0 dtxm:0 drxm:0 dtxs:0 drxs:0 asym:0 crtt:0 cko:0 setp:0 ucnt:0 bslide:1600 hd:11661 md:524288 ad:0 
+wrc# 
+----- lettura 2 (11:50:32) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:41 tx:44 lock:0 ptp:uncalibrated sv:1 ss:'SYNC_TAI' sec:26 nsec:621137600 mu:818851 dms:409425 dtxm:0 drxm:0 dtxs:0 drxs:0 asym:0 crtt:818851 cko:1704032814 setp:0 ucnt:2 bslide:1600 hd:14634 md:532396 ad:0 
+wrc# lnk:1 rx:42 tx:45 lock:0 ptp:uncalibrated sv:1 ss:'SYNC_TAI' sec:26 nsec:880123056 mu:818851 dms:409425 dtxm:0 drxm:0 dtxs:0 drxs:0 asym:0 crtt:818851 cko:1704032814 setp:0 ucnt:3 bslide:1600 hd:14627 md:557680 ad:0 
+----- lettura 3 (11:50:42) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:80 tx:69 lock:0 ptp:uncalibrated sv:1 ss:'SYNC_TAI' sec:37 nsec:063692880 mu:2898851 dms:1449425 dtxm:0 drxm:0 dtxs:0 drxs:0 asym:0 crtt:2898851 cko:1720368814 setp:0 ucnt:11 bslide:1600 hd:14623 md:524288 ad:0 
+wrc# 
+----- lettura 4 (11:50:53) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:113 tx:89 lock:0 ptp:uncalibrated sv:1 ss:'SYNC_TAI' sec:47 nsec:251399072 mu:2050851 dms:1025425 dtxm:0 drxm:0 dtxs:0 drxs:0 asym:0 crtt:2050851 cko:1752136814 setp:0 ucnt:17 bslide:1600 hd:14620 md:550324 ad:0 
+wrc# 
+----- lettura 5 (11:51:03) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:149 tx:112 lock:0 ptp:uncalibrated sv:1 ss:'SYNC_TAI' sec:57 nsec:520668528 mu:2002851 dms:1001425 dtxm:0 drxm:0 dtxs:0 drxs:0 asym:0 crtt:2002851 cko:1779328814 setp:0 ucnt:23 bslide:1600 hd:14619 md:550224 ad:0 
+wrc# lnk:1 rx:152 tx:113 lock:0 ptp:uncalibrated sv:1 ss:'SYNC_TAI' sec:57 nsec:871685152 mu:1602851 dms:801425 dtxm:0 drxm:0 dtxs:0 drxs:0 asym:0 crtt:1602851 cko:1782280814 setp:0 ucnt:24 bslide:1600 hd:14618 md:551751 ad:0 
+== MDIO dump finale (ANLPAR = cosa dichiara lo ZEN) ==
+
+===== wrc# mdio dump =====
+mdio dump
+  MDIO[0x00] MCR     = 0x1140
+  MDIO[0x04] MSR     = 0x01ac
+  MDIO[0x10] ANAR    = 0x0020
+  MDIO[0x14] ANLPAR  = 0x41a0
+  MDIO[0x40] WRSPEC  = 0x0020
+wrc# 
+== pll stat ==
+
+===== wrc# pll stat =====
+pll stat
+softpll: mode:slave seq:wait-helper n_ref 1 n_out 1
+irqs:491646 ext-align:0 DelCnt:0 setp:0 refcnt:6841 tagcnt:6477 MFL0 MPL0 MY:524288 m_kp:-1100 m_ki:-30 m_sh:8 HL0 HY=14618 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:-1 m_freq_lock_ms:1467 m_phase_lock_ms:-1 main: en:0 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+wrc# 
+== FINE test ZEN v12 ==

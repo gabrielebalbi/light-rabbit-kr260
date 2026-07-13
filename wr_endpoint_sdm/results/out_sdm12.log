@@ -1,0 +1,17 @@
+== baseline base=0, doppia misura ==
+  sdm_base = 0
+  FREQ_CNT=0x02FAF3D3 (status=0x00000001)
+  FREQ_CNT=0x02FAF3D3 (status=0x00000001)
+== FONDO SCALA base=2^24-1, TRIPLA misura ==
+  sdm_base = 16777215
+  FREQ_CNT=0x02FF853B (status=0x00000001)
+  FREQ_CNT=0x02FF851B (status=0x00000001)
+  FREQ_CNT=0x02FF8548 (status=0x00000001)
+== meta' scala base=2^23 (dentro il range raccomandato), doppia misura ==
+  sdm_base = 8388608
+  FREQ_CNT=0x02FF84EE (status=0x00000001)
+  FREQ_CNT=0x02FF84CF (status=0x00000001)
+== ripristino base=0 ==
+  sdm_base = 0
+  FREQ_CNT=0x02FAF3D3 (status=0x00000001)
+== Fine out_sdm12 ==

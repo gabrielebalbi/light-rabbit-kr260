@@ -1,0 +1,24 @@
+# Vivado project (generato da build_all.tcl / run_impl.tcl)
+vivado/
+
+# Log e journal Vivado nella root
+*.jou
+*.log
+*.backup.jou
+*.backup.log
+impl_run.log
+
+# Eccezione: i log di RISULTATO dei test sono dati, non log di build
+!wr_endpoint_sdm/results/*.log
+
+# Cache e temporanei Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Backup RTL
+rtl/*.bak*
+
+# File di sistema
+.DS_Store
+Thumbs.db

@@ -1,0 +1,137 @@
+=== WATCH WR (no reload) — 11:53:35 ===
+----- t=1 (11:53:35) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:680 tx:445 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497500 nsec:491688672 mu:-354962933551473166 dms:705425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:86910574 setp:0 ucnt:39 bslide:1600 hd:14632 md:555699 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:1516767 ext-align:0 DelCnt:0 setp:0 refcnt:548662 tagcnt:519504 MFL1 MPL0 MY:550051 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14639 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=2 (11:53:46) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:712 tx:464 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497511 nsec:294213200 mu:-354962933551473166 dms:929425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:90078574 setp:0 ucnt:41 bslide:1600 hd:14631 md:551530 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:1594746 ext-align:0 DelCnt:0 setp:0 refcnt:589869 tagcnt:558503 MFL1 MPL0 MY:553419 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14635 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=3 (11:53:57) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:749 tx:489 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497522 nsec:431628096 mu:-354962933551473166 dms:745425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:89382574 setp:0 ucnt:44 bslide:1600 hd:14622 md:551034 ad:0 
+wrc# lnk:1 rx:751 tx:490 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497522 nsec:773790768 mu:-354962933551473166 dms:1129425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:87462574 setp:0 ucnt:45 bslide:1600 hd:14629 md:550409 ad:0 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:1677637 ext-align:0 DelCnt:0 setp:0 refcnt:633662 tagcnt:599951 MFL1 MPL0 MY:553815 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14629 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=4 (11:54:08) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:790 tx:517 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497533 nsec:555140384 mu:-354962933551473166 dms:1481425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:84854574 setp:0 ucnt:48 bslide:1600 hd:14608 md:550671 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:1755444 ext-align:0 DelCnt:0 setp:0 refcnt:674774 tagcnt:638860 MFL1 MPL0 MY:556718 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14607 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=5 (11:54:19) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:826 tx:539 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497544 nsec:329443984 mu:-354962933551473166 dms:1649425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:87550574 setp:0 ucnt:50 bslide:1600 hd:14604 md:550595 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:1833360 ext-align:0 DelCnt:0 setp:0 refcnt:715969 tagcnt:677849 MFL1 MPL0 MY:550051 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14598 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=6 (11:54:30) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:863 tx:561 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497555 nsec:153586352 mu:-354962933551473166 dms:433425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:89902574 setp:0 ucnt:53 bslide:1600 hd:14602 md:551966 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:1911454 ext-align:0 DelCnt:0 setp:0 refcnt:757261 tagcnt:716929 MFL1 MPL0 MY:552964 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14611 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=7 (11:54:40) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:899 tx:584 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497565 nsec:958232128 mu:-354962933551473166 dms:953425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:82822574 setp:0 ucnt:56 bslide:1600 hd:14598 md:550644 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:1989231 ext-align:0 DelCnt:0 setp:0 refcnt:798377 tagcnt:755843 MFL1 MPL0 MY:549495 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14599 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=8 (11:54:52) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:936 tx:608 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497577 nsec:263085200 mu:-354962933551473166 dms:1945425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:81878574 setp:0 ucnt:59 bslide:1600 hd:14600 md:550479 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:2070797 ext-align:0 DelCnt:0 setp:0 refcnt:841500 tagcnt:796658 MFL1 MPL0 MY:549895 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14601 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=9 (11:55:02) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:975 tx:633 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497588 nsec:040070752 mu:-354962933551473166 dms:1817425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:78550574 setp:0 ucnt:62 bslide:1600 hd:14594 md:553720 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:2148552 ext-align:0 DelCnt:0 setp:0 refcnt:882605 tagcnt:835562 MFL1 MPL0 MY:551439 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14589 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=10 (11:55:13) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:1019 tx:662 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497598 nsec:842093440 mu:-354962933551473166 dms:505425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:73798574 setp:0 ucnt:65 bslide:1600 hd:14610 md:555866 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:2226504 ext-align:0 DelCnt:0 setp:0 refcnt:923812 tagcnt:874565 MFL1 MPL0 MY:554949 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14603 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=11 (11:55:24) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:1057 tx:686 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497609 nsec:892703504 mu:-354962933551473166 dms:1497425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:66758574 setp:0 ucnt:69 bslide:1600 hd:14599 md:553147 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:2306411 ext-align:0 DelCnt:0 setp:0 refcnt:966061 tagcnt:914552 MFL1 MPL0 MY:552877 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14584 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=12 (11:55:35) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:1094 tx:710 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497620 nsec:722498336 mu:-354962933551473166 dms:457425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:71462574 setp:0 ucnt:71 bslide:1600 hd:14589 md:556785 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:2384528 ext-align:0 DelCnt:0 setp:0 refcnt:1007370 tagcnt:953651 MFL1 MPL0 MY:556243 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14606 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=13 (11:55:46) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:1132 tx:735 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497631 nsec:685123664 mu:-354962933551473166 dms:913425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:67150574 setp:0 ucnt:74 bslide:1600 hd:14586 md:551574 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:2463457 ext-align:0 DelCnt:0 setp:0 refcnt:1049102 tagcnt:993150 MFL1 MPL0 MY:555025 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14587 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=14 (11:55:57) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:1169 tx:760 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497642 nsec:464220176 mu:-354962933551473166 dms:481425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:65678574 setp:0 ucnt:77 bslide:1600 hd:14585 md:550132 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:2541727 ext-align:0 DelCnt:0 setp:0 refcnt:1090490 tagcnt:1032324 MFL1 MPL0 MY:550524 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14589 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+----- t=15 (11:56:08) -----
+
+===== wrc# stat =====
+stat
+lnk:1 rx:1210 tx:785 lock:0 ptp:slave sv:1 ss:'<NULL>' sec:1728497653 nsec:315483168 mu:-354962933551473166 dms:993425 dtxm:1042887630 drxm:-1783335198 dtxs:1933868640 drxs:-1235099042 asym:0 crtt:4647031605195952773 cko:54974574 setp:0 ucnt:81 bslide:1600 hd:14576 md:553062 ad:0 
+wrc# 
+softpll: mode:slave seq:wait-main n_ref 1 n_out 1
+irqs:2619479 ext-align:0 DelCnt:0 setp:0 refcnt:1131594 tagcnt:1071228 MFL1 MPL0 MY:550075 m_kp:-1800 m_ki:-25 m_sh:12 HL1 HY=14578 h_kp:-150 h_ki:-2 h_sh:8 h_lock_ms:2712 m_freq_lock_ms:1089 m_phase_lock_ms:-1 main: en:1 ref:0 out:1 lck:0 freeze:0 gain_sched:1/1
+ptrack 0: en 1 id 0 ready 0 phase 5366 (5240 ps) avg 512
+=== fine watch ===

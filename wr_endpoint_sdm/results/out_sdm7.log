@@ -1,0 +1,29 @@
+== kr260_wr_sdm v4 — bring-up TX del GT ==
+  pll_locked(412)=1   rst_released(413)=1
+  --- catena reset TX (ordine: pma -> progdiv -> tx_done -> userclk) ---
+  txpmareset_done(420)=1  [proxy LOCK QPLL0: 0 = QPLL non aggancia]
+  txprgdivreset_done(421)=1  [0 con pma=1 -> PROGDIV non riparte]
+  tx_done(419)=1   userclk_tx_active(422)=1
+  serdes_ready(423)=1   rx_cdr_stable(424)=1
+  dmtd_locked(425)=1   phy_rdy(426)=1   sdm_toggle(427)=0
+  sdm_word[24:18]=0
+== 1) FMETER 0xA0030000 (riferimento noto-buono in lettura) ==
+  r 0xA0030000 → ok: Value at address 0xA0030000 (0xffffba7ae000): 0x5F5E100
+  r 0xA0030004 → **CRASH rc=135 (SIGBUS?)**
+== 2) FMETER WRITE (il discriminatore!): GATE_CYCLES=50e6 ==
+  w 0xA0030000 val=0x02FAF080 → ok: Written 0x2FAF080; readback 0x2FAF080
+  r 0xA0030000 → ok: Value at address 0xA0030000 (0xffff95ee8000): 0x2FAF080
+== 3) DRP READ puri (nessuna write prima) ==
+  r 0xA0020000 → ok: Value at address 0xA0020000 (0xffff871ff000): 0x0
+  r 0xA0020008 → ok: Value at address 0xA0020008 (0xffffa1ec8008): 0x0
+  r 0xA0020014 → **CRASH rc=135 (SIGBUS?)**
+  r 0xA0020018 → ok: Value at address 0xA0020018 (0xffff92aeb018): 0xDEADBEEF
+== 4) DRP WRITE (quella che dava SIGBUS) ==
+  w 0xA0020000 val=0x14 → ok: Written 0x14; readback 0x14
+  r 0xA0020000 → ok: Value at address 0xA0020000 (0xffff7fd06000): 0x14
+== 5) se (4) ok: transazione DRP completa in LETTURA (WE=0, EN=1) ==
+  w 0xA0020010 val=0x0 → ok: Written 0x0; readback 0x0
+  w 0xA002000C val=0x1 → **CRASH rc=135 (SIGBUS?)**
+  r 0xA0020014 → **CRASH rc=135 (SIGBUS?)**
+  r 0xA0020008 → ok: Value at address 0xA0020008 (0xffffb92ef008): 0x0
+== Fine. Riporta l'output COMPLETO nel log ==

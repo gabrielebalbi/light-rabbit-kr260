@@ -1,0 +1,76 @@
+==================================================================
+ DEPLOY v14 (v14: fix DAC 16->20bit (MPL) + bitslide)  —  21:17:04
+ SETUP: FIBRA IN LOOPBACK (SFP non-BiDi, TX->RX stessa scheda)
+==================================================================
+== md5 sorgente ==
+e8fd7d2469854f821b6060a5287a7c0a  /home/ubuntu/kr260_wr_sdm_app_v14/kr260_wr_sdm_app_v14.bit.bin
+== backup + install in /lib/firmware/xilinx/kr260_wr_sdm_app_v14 ==
+  installato kr260_wr_sdm_app_v14.bit.bin
+  installato kr260_wr_sdm_app_v14.dtbo
+  installato shell.json
+== md5 installato ==
+e8fd7d2469854f821b6060a5287a7c0a  /lib/firmware/xilinx/kr260_wr_sdm_app_v14/kr260_wr_sdm_app_v14.bit.bin
+== reload app (unload -> load) ==
+remove from slot 0 returns: -1 (Error)
+kr260_wr_sdm_app_v14: loaded to slot 0
+== UIO dopo il load (timestamp = prova del programm. reale) ==
+  uio0: axi-pmon          
+  uio1: axi-pmon          
+  uio2: axi-pmon          
+  uio3: axi-pmon          
+  uio4: kr260_axi_wb_bridge
+  uio5: axi_iic_sfp       
+  uio6: debug_bridge      
+   0 15:40:35
+   1 15:40:34
+   2 15:40:34
+   3 15:40:35
+   4 21:17:06
+   5 21:17:06
+   6 21:17:06
+== LASER: tx_enable on (il redeploy azzera il GPO) ==
+GPO[0] -> 1 (TX abilitato, presumibilmente). Verifica con read_sfp_ddm.py.
+GPO ora = 0x00000001
+== attesa 6 s per boot wrc ==
+== SANITY: il wrc risponde? (version) ==
+
+===== wrc# version =====
+version
+Unrecognized command "version".
+wrc# 
+== bring-up minimo: MAC fisso, mode slave, ptp start ==
+
+===== wrc# ptp stop =====
+ptp stop
+wrc# 
+
+===== wrc# mac set 00:11:22:33:44:55 =====
+mac set 00:11:22:33:44:55
+MAC-address: 00:11:22:33:44:55
+wrc# 
+
+===== wrc# mode slave =====
+mode slave
+wrc# 
+
+===== wrc# ptp start =====
+ptp start
+wrc# 
+== attesa 8 s ==
+=================== STAT (atteso lnk:1 in loopback) ===================
+
+===== wrc# stat =====
+stat
+lnk:1 rx:30 tx:36 lock:1 ptp:listening sv:0 ss:'LINK_DOWN' sec:24 nsec:462210864 mu:0 dms:0 dtxm:0 drxm:0 dtxs:0 drxs:0 asym:0 crtt:0 cko:0 setp:0 ucnt:0 bslide:11200 hd:11781 md:524288 ad:0 
+wrc# 
+=================== MDIO DUMP (registri PCS) =========================
+
+===== wrc# mdio dump =====
+mdio dump
+  MDIO[0x00] MCR     = 0x0140
+  MDIO[0x04] MSR     = 0x018c
+  MDIO[0x10] ANAR    = 0x0020
+  MDIO[0x14] ANLPAR  = 0x0000
+  MDIO[0x40] WRSPEC  = 0x00e0
+wrc# 
+== FINE deploy v13 ==
