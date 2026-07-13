@@ -102,6 +102,38 @@ Log completo: `shared_handoff/out_zen_v15.log` (test) + monitor esteso 6 min.
 | Autoneg | `ANLPAR = 0x41a0` | lo ZEN risponde |
 | Ottica | RX **-6.60 dBm**, TX -5.76 dBm, no LOS | SFP BiDi verso lo ZEN |
 
+### Frequenzimetro (2026-07-13, nodo in `TRACK_PHASE`)
+
+Misura di **TXUSRCLK2** — il clock che esce dalla QPLL0 sterzata via SDM — col
+`freq_counter` @`0xA0030000`, dal notebook `wr_node_panel.ipynb`:
+
+```
+gate      = 1.000 s
+FREQ_CNT  = 62 501 287
+TXUSRCLK2 = 62.5013 MHz     (+20.6 ppm dai 62.5 MHz nominali)
+```
+
+✅ La catena QPLL0+SDM genera il clock atteso.
+
+⚠️ **I +20,6 ppm NON sono un errore della QPLL0.** Il gate del frequenzimetro è contato in
+cicli di `pl_clk0`, che nasce dall'**oscillatore locale della SOM** (quarzo, tolleranza tipica
+±20÷50 ppm): stiamo misurando un clock *disciplinato al master WR* con un righello tarato sul
+quarzo di bordo. Quei 20 ppm sono quindi la distanza **quarzo SOM ↔ master WR-ZEN**, cioè una
+proprietà della SOM, non della catena di steering. Un frequenzimetro non può essere più preciso
+del proprio riferimento.
+
+La prova della correttezza in frequenza è un'altra ed è già in tabella: **`cko` entro ±5 ps** in
+`TRACK_PHASE`. Se il TX non fosse allineato al master, la fase scapperebbe e `MPL` cadrebbe.
+
+Conferme incrociate: l'offset sta **ben dentro lo span di steering del softpll (±244 ppm)** —
+meno del 10% dell'autorità di controllo, quindi ampio margine — ed è coerente con `md` lontano
+dal centro scala e in deriva lenta col riscaldamento, che è esattamente la correzione necessaria
+a compensare uno scarto di quell'ordine.
+
+> Per misurare lo steering *applicato* al netto del quarzo: leggere il frequenzimetro in
+> `mode master` (anello aperto) e in `mode slave` — la differenza è la correzione dell'SDM, e il
+> quarzo della SOM si cancella perché compare in entrambe. Costo: rompe l'aggancio.
+
 **Diagnosi confermata:** la causa di `MPL0` in v12/v13 era il mismatch di guadagno prodotto dal
 wrap a dente di sega del DAC 16-bit (A≈342×), non la taratura dell'anello. Con il packing /32
 (A≈1,3) la fase entra nella finestra ±1,17 ns e ci resta.
