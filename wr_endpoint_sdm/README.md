@@ -119,13 +119,44 @@ PS AXI: 0xA0020000 bridge DRP GTHE4_COMMON (QPLL0)   0xA0030000 freq_counter (TX
 | `scripts/` | `build_sdm.tcl` — build batch completa (sorgenti→IP GT fracN→BD→bit+app Kria) |
 | `test/` | script di test lato scheda (richiedono `busybox devmem`, **non** devmem2 — vedi sotto) |
 | `results/` | log grezzi `out_sdm*.log`, catture ILA + write-up `RESULTS.md` |
-| `notebooks/` | `sdm_steering.ipynb` — sweep steering + monitor lock per il LAB (Jupyter sulla Kria) |
+| `notebooks/` | `wr_node_panel.ipynb` — **pannello del nodo**: carica il fw, bring-up, vUART, frequenzimetro, monitor del lock (vedi sotto) · `sdm_steering.ipynb` — sweep steering + monitor lock |
 | `xvc/` | server XVC (ILA senza cavo JTAG) + procedura |
 
 I sorgenti in `hdl/` si innestano su un tree wr-cores con la piattaforma
 UltraScale+ `xilinx_ip` (8b10b hardware del GT, come le board ZCU102/106 del
 repo ufficiale); il tree completo non è incluso (troppo grande): `build_sdm.tcl`
 documenta i path attesi.
+
+## Il pannello grafico del nodo — `notebooks/wr_node_panel.ipynb`
+
+Fa **tutto il bring-up da scheda appena riavviata** e mostra lo stato del nodo:
+carica il firmware v15 sulla PL (con verifica dei timestamp `/dev/uio*` = programmazione
+reale), riaccende il laser, esegue MAC/autoneg/`mode slave`/`ptp start`, apre la **vUART**
+del softcore, legge il **frequenzimetro** (TXUSRCLK2, atteso ≈62.5 MHz) e infine grafica in
+loop **`cko`** (offset di fase dal master) e **`md`** (uscita del DAC che sterza l'SDM)
+finché non scatta il **phase lock**.
+
+Si usa via JupyterLab sulla Kria, tipicamente esposto in SSH tunnel:
+
+```
+# sulla scheda — DEVE girare come root: servono /dev/mem e xmutil
+sudo jupyter lab --allow-root --no-browser --ip=127.0.0.1 --port=8888
+# dalla workstation
+ssh -N -L 8888:localhost:8888 <user>@<kr260-host>
+# poi http://localhost:8888/lab/tree/wr_node_panel.ipynb
+```
+
+**Due trappole incontrate davvero, già gestite nel notebook:**
+
+1. **Jupyter come utente non funziona:** senza root il kernel non apre `/dev/mem` (la cella 1
+   se ne accorge e si ferma con un messaggio esplicito, invece di dare errori incomprensibili).
+2. **Backend `inline` di matplotlib rotto sull'immagine Kria:** matplotlib **3.5.1** di sistema
+   contro `matplotlib_inline` **0.2.2** in `~/.local` → `AttributeError: 'RcParams' object has
+   no attribute '_get'` al primo `import matplotlib.pyplot`. La cella dei grafici forza il
+   backend **Agg** e mostra le figure come PNG: nessun aggiornamento di pacchetti richiesto.
+
+⚠️ La vUART regge **un solo consumatore per volta**: mentre il notebook è vivo non lanciare
+`wrc_cmd.py`/`wr_stat.sh` da shell, o si rubano i byte a vicenda.
 
 ## Trappola nota: devmem2 su aarch64
 
