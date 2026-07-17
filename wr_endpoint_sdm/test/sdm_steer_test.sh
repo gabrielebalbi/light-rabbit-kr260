@@ -12,11 +12,11 @@ FM=0xA0030000   # fmeter: +0 GATE, +4 FREQ_CNT, +8 STATUS
 DRP=0xA0020000  # bridge: +0 ADDR, +4 DI, +8 DO, +C EN, +10 WE, +14 RDY
 GPIO0=466       # sdm_base bit0 = EMIO out 54 = gpio 412+54
 
-fmeter(){ # misura con gate 1s (GATE=100e6 @ pl_clk0)
+fmeter(){ # misura con gate 0,800 s (GATE=100e6 cicli @ pl_clk0 = 125 MHz)
   DM $FM 32 0x05F5E100 >/dev/null
   sleep 2.3
   local c=$(DM $((FM+4)) 32); local s=$(DM $((FM+8)) 32)
-  echo "  FREQ_CNT=$c (status=$s)  [tx clk atteso ~62.5e6; conta in 1s di pl_clk0]"
+  echo "  FREQ_CNT=$c (status=$s)  [tx clk ~62.5 MHz; gate 0,800 s -> atteso ~50e6 conteggi]"
 }
 drp_rd(){ # drp_rd <addr10bit>
   DM $DRP 32 $1 >/dev/null          # ADDR

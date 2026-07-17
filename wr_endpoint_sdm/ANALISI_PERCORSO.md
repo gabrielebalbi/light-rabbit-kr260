@@ -49,7 +49,8 @@ Perché sia utilizzabile come attuatore del softpll WR, lo steering SDM deve ess
 
 ### 1.4 Cosa è stato dimostrato (firmware v6, 2026-07-04)
 Misurando TXPRGDIVCLK con il frequenzimetro hardware mentre si scrive la parola SDM:
-- **Δ = +183.108 ppb** con base `2^22` (atteso +183.110 a DAC=0: accordo a 2 conteggi);
+- **Δ = +183 108 conteggi** del frequenzimetro con base `2^22`, sulla baseline di
+  50 000 853 (atteso +183 110 a DAC=0: accordo a 2 conteggi) → **+3 662 ppm**;
 - risposta **lineare** ed **esatta** sotto la saturazione, **reversibile bit-esatto**
   al ritorno alla baseline;
 - saturazione del VCO oltre ~+6000 ppm (frac ~0,38), ben oltre il necessario;
