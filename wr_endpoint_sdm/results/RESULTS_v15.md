@@ -94,7 +94,7 @@ Log completo: `shared_handoff/out_zen_v15.log` (test) + monitor esteso 6 min.
 |---|---|---|
 | `ss` | `TRACK_PHASE` | stabile da ~40 s dopo lo start, **mai perso in 8 min** |
 | `cko` (clock offset) | **0, entro ±5 ps** | sincronizzazione ben **sub-nanosecondo** |
-| `m_phase_lock_ms` | 3597 | aggancio di fase in ~4 s, mai perso |
+| `m_phase_lock_ms` | 3597 | **latenza** dell'aggancio (~3,6 s da `mpll_start`), **non** da quanto regge il lock |
 | `m_freq_lock_ms` | 674 | |
 | `setp` / `ptrack phase` | 15518 ±3 LSB / 15889 (15516 ps) | fermi |
 | `md` (DAC main) | 624k → 634k, **poi piatto** | deriva termica di warm-up, **non** il limit-cycle ±5000 di v13 |
@@ -143,6 +143,38 @@ inseguendo (non è fermo per caso). Margine DAC verso il fondo scala (2^20): ~41
 
 → **"Light Rabbit": endpoint White Rabbit a fase chiusa via steering SDM/QPLL0, contro un
 WR-ZEN commerciale.** v15 è la nuova build di riferimento.
+
+## Tenuta del lock nel lungo periodo: come si misura (`DelCnt`)
+
+Gli 8 min del test del 13/7 dicono poco sulla stabilità reale. La misura giusta è il
+**contatore di delock del softpll**, esposto da `pll stat` come `DelCnt` e letto dal monitor
+del notebook (sezione 7).
+
+Cosa significa, letto in `wrpc-sw` (master `a9f7580`) — **non documentato upstream**:
+
+| | |
+|---|---|
+| `DelCnt` | `softpll.delock_count`, incrementato in `softpll_ng.c:203` (stato `SEQ_READY`) |
+| Cosa scatena l'incremento | la **fase**, non la frequenza: `spll_main.c:153` → `s->locked` segue solo `phase_ld` |
+| Cosa costa un delock | la FSM torna a `SEQ_CLEAR_DACS`: **azzera i DAC e rifà tutto il bring-up** (~7 s di sync persa). Non è un riaggancio morbido |
+| Quando si azzera | **solo a `ptp start`** (`spll_init()`, `softpll_ng.c:271`) |
+
+→ **`DelCnt` è quindi il conto dei delock dall'ultimo `ptp start`**: lasciando la scheda accesa
+diventa una misura di tenuta lunga quanto si vuole, a costo zero.
+
+**Procedura:** dopo il bring-up **non ritoccare `ptp start`**, e **leggere `pll stat` PRIMA di
+togliere alimentazione** — al boot la PL torna a `k26-starter-kits` e il contatore è perso.
+(Imparato a spese nostre: la misura dal deploy del 13/7 fino al 16/7 ~14:22 è andata persa così.)
+
+Misura in corso: avviata il **2026-07-17 ~07:15**, `DelCnt:0` a 15 letture dallo start,
+`TRACK_PHASE` con `cko:2 ps` e `m_phase_lock_ms:3415` (in linea con i 3597 del 13/7).
+
+> ⚠️ **`MFL` non è affidabile come indicatore di delock.** `spll_main.c:121-123` imposta
+> `freq_ld.delock_samples = 20000 > lock_samples = 50`, che viola l'invariante documentato in
+> `spll_common.h:34`: in `ld_update` il ramo di uscita dal lock non scatta mai, quindi **`MFL`
+> non torna più a 0** una volta salito. `MFL1` dice solo che *a un certo punto* la frequenza era
+> agganciata. Sembra un bug upstream, **mai falsificato sulla nostra scheda** (prova possibile:
+> staccare la fibra e vedere se `MFL` resta 1 mentre `MPL` cade). Fidarsi di `DelCnt` e `MPL`.
 
 ## Stato precedente (pre-test)
 
