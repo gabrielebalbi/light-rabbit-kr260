@@ -18,3 +18,11 @@ set_clock_groups -asynchronous -quiet \
 # Cintura e bretelle: la catena di carry e il primo rank di cattura sono
 # asincroni per costruzione (l'informazione di fase sta proprio li').
 set_false_path -to [get_cells -hier -quiet -regexp {.*u_dl/therm_r1_reg.*}]
+
+# Ring oscillator (u_ring, sorgente di calibrazione): loop combinatorio
+# intenzionale, va esplicitamente permesso in DRC (altrimenti la synth lo
+# spezza/rifiuta) e tolto dalla STA (non ha senso analizzare staticamente
+# il timing di un anello libero che oscilla per costruzione).
+set_property ALLOW_COMBINATORIAL_LOOPS TRUE \
+    [get_nets -hier -quiet -regexp {.*u_ring/stage.*}]
+set_false_path -through [get_pins -hier -quiet -regexp {.*u_ring/u_nand/O}]

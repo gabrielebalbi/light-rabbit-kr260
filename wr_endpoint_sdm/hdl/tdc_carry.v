@@ -21,10 +21,19 @@
 //   0x10  TAPS     r/o  numero di tap della linea (per la calibrazione)
 //   0x14  CLK_HZ   r/o  frequenza clock TDC in Hz
 //   0x18  CNT_HITS r/o  conteggio hit totale (wrap 32 bit, anche a FIFO piena)
+//   0x1C  RING_CNT r/o  fronti del ring oscillator dall'ultimo reset del TDC
+//                       (due letture a distanza nota -> stima la sua frequenza)
 //
-// Calibrazione (software, code-density): input_sel=2 (cal = aclk/6, asincrono
-// rispetto al clock TDC), raccogliere ~1e5 stamp, istogramma dei fine ->
-// larghezza dei bin in ps. fine=0 o fine=TAPS saturi = fronte fuori finestra.
+// Calibrazione (software, code-density): input_sel=2 = ring oscillator libero
+// (nessun PLL, frequenza data solo dal ritardo di LUT/routing -> genuinamente
+// incommensurabile col clock del TDC, con jitter termico reale). Raccogliere
+// molti stamp, istogramma dei fine -> larghezza dei bin in ps. fine=0 o
+// fine=TAPS saturi = fronte fuori finestra.
+// NB: la vecchia sorgente "cal" (divisore di s_axi_aclk) e' stata sostituita
+// il 20/7/2026: essendo periodica e derivata dallo stesso albero di
+// riferimento della scheda del clock TDC, dava un istogramma concentrato in
+// un quarto della catena invece che uniforme (verificato su hardware, anche
+// con fronti isolati -> non era un artefatto di polling/FIFO).
 module tdc_carry #(
     parameter integer N_C8         = 96,
     parameter integer TDC_CLK_HZ   = 375_000_000,
@@ -89,22 +98,16 @@ module tdc_carry #(
     reg        csr_enable;
     reg  [1:0] csr_sel;
     reg        sw_line;          // linea toggle per input_sel=3
-    reg  [2:0] cal_div;          // aclk/6 ~ 20.8 MHz per la calibrazione
-    reg        cal_line;
 
-    always @(posedge s_axi_aclk) begin
-        if (!s_axi_aresetn) begin
-            cal_div <= 0; cal_line <= 0;
-        end else if (cal_div == 3'd2) begin
-            cal_div <= 0; cal_line <= ~cal_line;
-        end else
-            cal_div <= cal_div + 1;
-    end
+    // sorgente di calibrazione: ring oscillator libero, abilitato solo
+    // insieme al TDC (niente switching quando non serve)
+    wire ring_osc_raw;
+    ring_osc #(.NUM_INV(30)) u_ring (.en(csr_enable), .osc_o(ring_osc_raw));
 
     // mux ingresso: combinatorio, poi dentro la catena (l'asincronia e' il punto)
     wire hit_mux = (csr_sel == 2'd0) ? tdc_hit_pmod :
                    (csr_sel == 2'd1) ? pps_i        :
-                   (csr_sel == 2'd2) ? cal_line     : sw_line;
+                   (csr_sel == 2'd2) ? ring_osc_raw : sw_line;
     wire hit_gated = hit_mux & csr_enable;
 
     // ------------------------------------------------------------------
@@ -139,6 +142,21 @@ module tdc_carry #(
     always @(posedge s_axi_aclk) begin
         hit_cnt_m <= hit_cnt_tdc;
         hit_cnt_a <= hit_cnt_m;
+    end
+
+    // monitor del ring oscillator: conta i suoi fronti di salita, campionati
+    // nel dominio clk_tdc (l'edge detect e' solo un modo di misurarlo, la
+    // sorgente resta asincrona per costruzione)
+    reg [31:0] ring_cnt_tdc = 32'd0;
+    reg        ring_d;
+    always @(posedge clk_tdc) begin
+        ring_d <= ring_osc_raw;
+        if (ring_osc_raw & ~ring_d) ring_cnt_tdc <= ring_cnt_tdc + 1;
+    end
+    (* ASYNC_REG = "true" *) reg [31:0] ring_cnt_m, ring_cnt_a;
+    always @(posedge s_axi_aclk) begin
+        ring_cnt_m <= ring_cnt_tdc;
+        ring_cnt_a <= ring_cnt_m;
     end
 
     // ------------------------------------------------------------------
@@ -211,7 +229,7 @@ module tdc_carry #(
     // ------------------------------------------------------------------
     localparam [4:0] CSR_OFF  = 5'h00, STAT_OFF = 5'h04, TSLO_OFF = 5'h08,
                      TSHI_OFF = 5'h0C, TAPS_OFF = 5'h10, CLKF_OFF = 5'h14,
-                     HITS_OFF = 5'h18;
+                     HITS_OFF = 5'h18, RING_OFF = 5'h1C;
 
     reg [C_S_AXI_ADDR_WIDTH-1:0] awaddr_r;
     reg aw_pend, w_pend;
@@ -265,6 +283,7 @@ module tdc_carry #(
                     TAPS_OFF: s_axi_rdata <= NT;
                     CLKF_OFF: s_axi_rdata <= TDC_CLK_HZ;
                     HITS_OFF: s_axi_rdata <= hit_cnt_a;
+                    RING_OFF: s_axi_rdata <= ring_cnt_a;
                     default:  s_axi_rdata <= 32'hDEAD_7DC0;
                 endcase
             end else
