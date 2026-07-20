@@ -21,11 +21,19 @@ open_project $proj
 
 puts "=== inject build id nel BD ==="
 open_bd_design [get_files wr_bd.bd]
+# l'interfaccia parametri di build_id puo' essere cambiata: refresh difensivo
+catch {update_module_reference [get_bd_cells build_id_0]}
+# parametri in mezze parole da 16 bit: il wrapper VHDL del BD li converte in
+# integer CON SEGNO a 32 bit, un hash con MSB=1 sforerebbe (visto con a9f7580f)
 set_property -dict [list \
-  CONFIG.FW_GITHASH "32'h$fw_hash" \
-  CONFIG.SW_GITHASH "32'h$sw_hash" \
-  CONFIG.BUILD_TS   "32'h$ts" \
-  CONFIG.FLAGS      "32'h$flags"] [get_bd_cells build_id_0]
+  CONFIG.FW_HASH_HI "16'h[string range $fw_hash 0 3]" \
+  CONFIG.FW_HASH_LO "16'h[string range $fw_hash 4 7]" \
+  CONFIG.SW_HASH_HI "16'h[string range $sw_hash 0 3]" \
+  CONFIG.SW_HASH_LO "16'h[string range $sw_hash 4 7]" \
+  CONFIG.TS_HI      "16'h[string range $ts 0 3]" \
+  CONFIG.TS_LO      "16'h[string range $ts 4 7]" \
+  CONFIG.FLAGS_HI   "16'h[string range $flags 0 3]" \
+  CONFIG.FLAGS_LO   "16'h[string range $flags 4 7]"] [get_bd_cells build_id_0]
 save_bd_design
 close_bd_design [current_bd_design]
 

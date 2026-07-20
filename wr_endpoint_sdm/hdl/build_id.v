@@ -2,9 +2,10 @@
 
 // Registri di identificazione della build (v16): git hash del gateware e del
 // software (wrpc-sw) embedded in wrc.bram, piu' timestamp e flag.
-// I parametri GIT_* sono sovrascritti a ogni build dall'hook pre-synth
-// scripts/set_build_id.tcl (legge git); i default 0xDEADxxxx segnalano una
-// build fatta senza hook.
+// I parametri sono sovrascritti a ogni build da rebuild_v16.tcl (legge git);
+// i default 0xDEADxxxx segnalano una build fatta senza hook. Sono spezzati in
+// mezze parole da 16 bit perche' il wrapper VHDL del BD li converte in integer
+// (con segno, 32 bit): un hash con MSB=1 sforerebbe il massimo rappresentabile.
 //
 // Register map (AXI4-Lite, offset da base 0xA0050000):
 //   0x00  FW_GITHASH  r/o  primi 8 esadecimali dell'hash del repo gateware
@@ -14,10 +15,10 @@
 //                          dirty = repo con modifiche non committate al build:
 //                          l'hash NON identifica esattamente cio' che gira
 module build_id #(
-    parameter [31:0] FW_GITHASH = 32'hDEAD_0001,
-    parameter [31:0] SW_GITHASH = 32'hDEAD_0002,
-    parameter [31:0] BUILD_TS   = 32'h0,
-    parameter [31:0] FLAGS      = 32'h1000_0003,
+    parameter [15:0] FW_HASH_HI = 16'hDEAD, parameter [15:0] FW_HASH_LO = 16'h0001,
+    parameter [15:0] SW_HASH_HI = 16'hDEAD, parameter [15:0] SW_HASH_LO = 16'h0002,
+    parameter [15:0] TS_HI      = 16'h0,    parameter [15:0] TS_LO      = 16'h0,
+    parameter [15:0] FLAGS_HI   = 16'h1000, parameter [15:0] FLAGS_LO   = 16'h0003,
     parameter integer C_S_AXI_DATA_WIDTH = 32,
     parameter integer C_S_AXI_ADDR_WIDTH = 8
 ) (
@@ -74,10 +75,10 @@ module build_id #(
             if (s_axi_arvalid && !s_axi_arready && !s_axi_rvalid) begin
                 s_axi_arready <= 1;
                 case (s_axi_araddr[3:2])
-                    2'd0: s_axi_rdata <= FW_GITHASH;
-                    2'd1: s_axi_rdata <= SW_GITHASH;
-                    2'd2: s_axi_rdata <= BUILD_TS;
-                    2'd3: s_axi_rdata <= FLAGS;
+                    2'd0: s_axi_rdata <= {FW_HASH_HI, FW_HASH_LO};
+                    2'd1: s_axi_rdata <= {SW_HASH_HI, SW_HASH_LO};
+                    2'd2: s_axi_rdata <= {TS_HI, TS_LO};
+                    2'd3: s_axi_rdata <= {FLAGS_HI, FLAGS_LO};
                 endcase
                 s_axi_rvalid <= 1;
             end else
