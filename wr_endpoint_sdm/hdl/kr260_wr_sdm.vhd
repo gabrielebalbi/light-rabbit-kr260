@@ -54,6 +54,8 @@ entity kr260_wr_sdm is
     -- Clock su PMOD1 per misura frequenzimetro (toggle FF clk/2, bank 45 HD)
     tx_clk_pmod_o  : out   std_logic;   -- H12 = PMOD1 pin1: TXUSRCLK2/2
     rx_clk_pmod_o  : out   std_logic;   -- B10 = PMOD1 pin2: CDR/2
+    -- v16: ingresso TDC (E10 = PMOD1 pin3, bank 45 HD, LVCMOS33)
+    tdc_hit_pmod_i : in    std_logic;
     -- Status LEDs
     led_link_o     : out   std_logic;
     led_act_o      : out   std_logic;
@@ -101,8 +103,12 @@ architecture struct of kr260_wr_sdm is
       drpc_we         : out std_logic;
       drpc_do         : in  std_logic_vector(15 downto 0);
       drpc_rdy        : in  std_logic;
-      -- clock misurato dal freq_counter
-      fmeter_clk      : in  std_logic);
+      -- clock misurato dal freq_counter; in v16 e' anche il riferimento
+      -- dell'MMCM del TDC (TXUSRCLK2 = 62.5 MHz WR-disciplinato)
+      fmeter_clk      : in  std_logic;
+      -- v16: TDC a catena di carry + registri build_id (dentro il BD)
+      tdc_hit_pmod    : in  std_logic;
+      tdc_pps         : in  std_logic);
   end component wr_bd_wrapper;
 
   signal pl_clk0      : std_logic;
@@ -241,7 +247,9 @@ begin
       drpc_we        => drpc_we_s,
       drpc_do        => drpc_do_s,
       drpc_rdy       => drpc_rdy_s,
-      fmeter_clk     => tx_usr_clk_dbg);
+      fmeter_clk     => tx_usr_clk_dbg,
+      tdc_hit_pmod   => tdc_hit_pmod_i,
+      tdc_pps        => pps_s);
 
   brg_master_out.adr <= wb_adr_s;
   brg_master_out.dat <= wb_dat_m2s_s;
