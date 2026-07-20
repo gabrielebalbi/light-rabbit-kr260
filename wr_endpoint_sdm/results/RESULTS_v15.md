@@ -171,10 +171,23 @@ Misura in corso: avviata il **2026-07-17 ~07:15**, `DelCnt:0` a 15 letture dallo
 
 > ⚠️ **`MFL` non è affidabile come indicatore di delock.** `spll_main.c:121-123` imposta
 > `freq_ld.delock_samples = 20000 > lock_samples = 50`, che viola l'invariante documentato in
-> `spll_common.h:34`: in `ld_update` il ramo di uscita dal lock non scatta mai, quindi **`MFL`
-> non torna più a 0** una volta salito. `MFL1` dice solo che *a un certo punto* la frequenza era
-> agganciata. Sembra un bug upstream, **mai falsificato sulla nostra scheda** (prova possibile:
-> staccare la fibra e vedere se `MFL` resta 1 mentre `MPL` cade). Fidarsi di `DelCnt` e `MPL`.
+> `spll_common.h:34`: `lock_cnt` satura a 50, quindi in `ld_update` il ramo di uscita dal lock
+> (`lock_cnt == 20000`) è **matematicamente irraggiungibile** — durante il funzionamento
+> continuo `MFL` non può cadere. Si azzera **solo** al restart completo della FSM:
+> `mpll_start` → `ld_init(&s->freq_ld)` (`spll_main.c:234`), cioè al bring-up e a ogni giro
+> `SEQ_CLEAR_DACS` dopo un delock di fase. `MFL1` dice quindi che la frequenza si è agganciata
+> *almeno una volta dall'ultimo `mpll_start`*, non che lo è adesso.
+>
+> **Il baco è upstream, non del porting KR260.** `git blame`: l'invariante è violato fin
+> dall'introduzione del frequency prelocking (`92b55882b`, 8/11/2023, `delock_samples = 1000`)
+> ed è stato accentuato da `d77aca48f` (18/11/2023, *"fiddle a bit with freq prelock
+> threshold"*, 1000 → 20000) — entrambi commit wrpc-sw upstream (T. Wlostowski, CERN); il
+> nostro albero è master `a9f7580` **non modificato** in `softpll/`.
+>
+> Prova su hardware ancora da fare: staccare la fibra a lock acquisito e osservare la sequenza
+> dei flag (attesa: `MPL→0`, poi `MFL→0` solo quando la FSM riparte, via `ld_init` e non via
+> `ld_update`; possibile sorpresa: a fibra staccata i tag di riferimento potrebbero fermarsi
+> del tutto e congelare *entrambi* i flag). In ogni caso: fidarsi di `DelCnt` e `MPL`.
 
 ## Stato precedente (pre-test)
 
