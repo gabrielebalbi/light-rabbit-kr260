@@ -145,7 +145,20 @@ cancellata comunque, altrimenti si builda pulito ma con il vecchio valore
    notebook (`APP = "kr260_wr_sdm_app_v17"` in sezione 2).
 2. Bring-up WRPC dal notebook (sezione 5) per riavere `TRACK_PHASE` e poter
    ripetere l'autotest PPS (sezione 11a).
-3. Sezioni 10-12 del notebook fanno tutto il resto: build_id, monitor TDC,
-   autotest PPS, code-density, calibrazione — vedi lì per l'uso pratico.
+3. Sezioni 10-13 del notebook fanno tutto il resto: build_id, monitor TDC,
+   autotest PPS, code-density, calibrazione, **deriva termica** — vedi lì per
+   l'uso pratico.
 4. Aperto ma non urgente: usare `tdc_calibrated_ps()` su una sorgente esterna
    vera (PMOD, non solo ring/PPS) per una validazione end-to-end completa.
+
+## Deriva termica della calibrazione (sezione 13, 21/7/2026)
+
+La temperatura PS/PL è letta dal **SYSMON interno via IIO**
+(`/sys/bus/iio/devices/iio:device0`, canali `ps_temp`/`pl_temp`/`remote_temp`)
+— **già esposto da Linux su ogni immagine**, nessuna periferica PL aggiuntiva.
+Ogni esecuzione della sezione 12 salva timestamp+temperatura+tabella in
+`/home/ubuntu/tdc_calibration_log.json`; la sezione 13 confronta le voci
+salvate per stimare la deriva reale in ps/°C. Non abbiamo ancora un dato reale
+(serve una seconda calibrazione a temperatura genuinamente diversa) — la
+prima voce salvata: PL=25,85 °C. Il ramo di calcolo è comunque verificato
+(iniettata e poi rimossa una voce sintetica: matematica confermata esatta).
