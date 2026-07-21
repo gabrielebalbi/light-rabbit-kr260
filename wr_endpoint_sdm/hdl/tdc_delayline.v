@@ -3,11 +3,27 @@
 // Linea di ritardo a catena di carry (CARRY8, UltraScale+) per TDC.
 // Il segnale entra dal CI del primo CARRY8 e si propaga verso l'alto in modalita'
 // propagate (S=FF, DI=00): O[k] fotografa lo stato della catena al tap k.
-// Doppio rank di FF (ASYNC_REG) + popcount pipelinato bubble-tolerant:
+// UN SOLO rank di FF (ASYNC_REG) + popcount pipelinato bubble-tolerant:
 //   fine_o = numero di tap a 1 = da quanto tempo (in tap) e' arrivato il fronte
 //   rispetto al fronte di clk che campiona. Tap tipico US+ ~4-6 ps.
+//
+// ATTENZIONE (lezione del 21/7/2026, trovata su hardware): con un SECONDO
+// stadio di registrazione prima del popcount, il code-density test risultava
+// concentrato sistematicamente vicino alla saturazione (fine~=NT), su
+// QUALSIASI sorgente (anche un ring oscillator libero, incommensurabile per
+// costruzione) — quindi non era un problema della sorgente. Causa: la catena
+// di carry dedicato satura in ~1-3 ns (decine di ps/CARRY8), MENO del ciclo
+// di clk_i (2.667 ns @375MHz); un secondo stadio di registrazione aggiunge
+// pero' un intero ciclo di ritardo prima che il vettore venga anche solo
+// usato — per allora il fronte ha gia' finito di propagarsi ovunque: non si
+// misura piu' "dove" era il fronte, si fotografa uno stato gia' saturo.
+// Un solo registro diretto sul vettore grezzo e' la pratica standard nei TDC
+// a catena di carry: si accetta metastabilita' occasionale sul singolo bit
+// vicino alla transizione (rumore di poche unita' sull'LSB, non un guasto
+// funzionale — anzi e' li' che vive l'informazione fine utile).
+//
 // Rivelazione hit sul tap 0 (il primo a salire): serve che l'ingresso torni
-// basso prima del fronte successivo (dead time 2 cicli) — ok per PPS e
+// basso prima del fronte successivo (dead time 1 ciclo) — ok per PPS e
 // sorgenti di calibrazione fino a qualche decina di MHz.
 //
 // La catena si piazza da sola in colonna (CO->CI dedicato); DONT_TOUCH evita
@@ -42,12 +58,10 @@ module tdc_delayline #(
         end
     endgenerate
 
-    // --- doppio rank di cattura (metastabilita') ------------------------
+    // --- singolo rank di cattura, diretto sul vettore grezzo -------------
     (* ASYNC_REG = "true", DONT_TOUCH = "true" *) reg [NT-1:0] therm_r1;
-    (* ASYNC_REG = "true" *)                      reg [NT-1:0] therm_r2;
     always @(posedge clk_i) begin
         therm_r1 <= tap;
-        therm_r2 <= therm_r1;
     end
 
     // --- rivelazione del fronte -----------------------------------------
@@ -55,8 +69,8 @@ module tdc_delayline #(
     reg        hit_ev;        // nuovo fronte visto in questo campione
     reg [43:0] coarse_ev;
     always @(posedge clk_i) begin
-        tap0_d    <= therm_r2[0];
-        hit_ev    <= therm_r2[0] & ~tap0_d;
+        tap0_d    <= therm_r1[0];
+        hit_ev    <= therm_r1[0] & ~tap0_d;
         coarse_ev <= coarse_i;
     end
 
@@ -67,8 +81,8 @@ module tdc_delayline #(
     reg        v1;   reg [43:0] c1;
     always @(posedge clk_i) begin
         for (i = 0; i < N_C8; i = i + 1)
-            pc1[i] <= therm_r2[i*8]   + therm_r2[i*8+1] + therm_r2[i*8+2] + therm_r2[i*8+3]
-                    + therm_r2[i*8+4] + therm_r2[i*8+5] + therm_r2[i*8+6] + therm_r2[i*8+7];
+            pc1[i] <= therm_r1[i*8]   + therm_r1[i*8+1] + therm_r1[i*8+2] + therm_r1[i*8+3]
+                    + therm_r1[i*8+4] + therm_r1[i*8+5] + therm_r1[i*8+6] + therm_r1[i*8+7];
         v1 <= hit_ev;  c1 <= coarse_ev;
     end
 
