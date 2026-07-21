@@ -13,7 +13,7 @@ proc git_info {dir} {
 }
 lassign [git_info /home/labele/sfp_drp_kr260_sdm] fw_hash fw_dirty
 lassign [git_info /home/labele/wrpc-sw]           sw_hash sw_dirty
-set flags [format %08x [expr {(16 << 24) | ($sw_dirty << 1) | $fw_dirty}]]
+set flags [format %08x [expr {(17 << 24) | ($sw_dirty << 1) | $fw_dirty}]]
 set ts    [format %08x [clock seconds]]
 puts "BUILD_ID: fw=$fw_hash (dirty=$fw_dirty) sw=$sw_hash (dirty=$sw_dirty) flags=0x$flags"
 
@@ -66,10 +66,10 @@ write_checkpoint -force $out/kr260_wr_sdm_v16.dcp
 write_bitstream  -force $out/kr260_wr_sdm_v16.bit
 catch { write_debug_probes -force $out/kr260_wr_sdm_v16.ltx }
 
-puts "=== make_kr260_app.sh -> kr260_wr_sdm_app_v16 ==="
+puts "=== make_kr260_app.sh -> kr260_wr_sdm_app_v17 ==="
 if {[catch {exec bash /home/labele/kr260_wr_psen/scripts/make_kr260_app.sh \
-              $out/kr260_wr_sdm_v16.bit kr260_wr_sdm_app_v16 \
-              $root/app/kr260_wr_sdm_app_v16 >@stdout 2>@stderr} err]} {
+              $out/kr260_wr_sdm_v16.bit kr260_wr_sdm_app_v17 \
+              $root/app/kr260_wr_sdm_app_v17 >@stdout 2>@stderr} err]} {
   puts "WARNING: app packaging failed: $err"
 }
-puts "=== SDM_BUILD_DONE_V16 WNS=$wns ==="
+puts "=== SDM_BUILD_DONE_V17 WNS=$wns ==="

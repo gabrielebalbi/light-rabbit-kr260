@@ -1,12 +1,20 @@
-# v16 — registri build-id + TDC a catena di carry
+# v16/v17 — registri build-id + TDC a catena di carry
 
-Progetto Vivado: `~/kr260_wr_sdm_v16` (copia della v15; runs esclusi).
+Progetto Vivado: `~/kr260_wr_sdm_v16` (copia della v15; runs esclusi) — il nome
+della cartella è rimasto "v16" (rinominarla avrebbe rotto i path assoluti nel
+progetto Vivado), ma **l'app deployata dal 21/7/2026 è `kr260_wr_sdm_app_v17`**
+(registro `FLAGS[31:24]=17`): la catena raddoppiata a 1536 tap + il fix di
+polarità hanno reso il firmware abbastanza diverso da meritare il bump di
+versione. `kr260_wr_sdm_app_v16` (768 tap, senza fix polarità) resta a bordo
+come fallback ma **non va più usata** per il TDC.
+
 Sorgenti di riferimento: `hdl/` di questo repo (`build_id.v`, `tdc_carry.v`,
 `tdc_delayline.v`, `ring_osc.v`, `tdc_v16.xdc`, top aggiornato). Integrazione
-una tantum: `scripts/integrate_v16.tcl`; build: `scripts/rebuild_v16.tcl`.
+una tantum: `scripts/integrate_v16.tcl`; build: `scripts/rebuild_v16.tcl`
+(nonostante il nome, produce `kr260_wr_sdm_app_v17`).
 
-**Stato: buildato e verificato su hardware il 20/7/2026** (vedi "Esito
-verifica su hardware" in fondo).
+**Stato: buildato e verificato su hardware il 21/7/2026, calibrazione inclusa**
+(vedi "Esito verifica su hardware" in fondo).
 
 ## Mappa indirizzi (invariata + 2 nuove periferiche)
 
@@ -102,31 +110,42 @@ la fase non gira uniformemente in pochi secondi di test. Un ring oscillator
   `ALLOW_COMBINATORIAL_LOOPS` in XDC — non è un errore di sintesi se compare
   in report_drc, è atteso e già gestito in `tdc_v16.xdc`.
 
-## Esito verifica su hardware (20/7/2026)
+## Esito verifica su hardware — stato finale (21/7/2026, immagine v17)
 
-- **build_id**: `FW_GITHASH` e `SW_GITHASH` letti identici agli hash attesi
-  dal commit di build. `FLAGS` corretto (sw_dirty=1, legittimo: porting wrpc-sw
-  non committato).
-- **TDC, infrastruttura**: in 6 s, 124.999.562 hit contati contro un atteso di
-  125.000.000 dalla sorgente di calibrazione (scarto 0,0004%) — clock, coarse
-  counter, FIFO, AXI tutti funzionanti.
-- **TDC, code-density**: primo giro (cal = divisore aclk) inconcludente, vedi
-  sopra — risolto passando al ring oscillator. Verificare il nuovo istogramma
-  al prossimo giro sul ferro.
-- **TDC, PPS**: non testato, bloccato dal bring-up WRPC (WRPC non ancora in
-  `TRACK_PHASE` al momento del test — la scheda si era appena riavviata).
+Tutto verificato su `kr260_wr_sdm_app_v17` (`FW_GITHASH=0xc93460eb`,
+`FLAGS[31:24]=17`, `TAPS=1536`):
 
-## Da fare al ritorno della scheda
+- **build_id**: `FW_GITHASH`/`SW_GITHASH`/`FLAGS` letti esatti.
+- **TDC, infrastruttura**: hit contati coerenti con la frequenza della
+  sorgente entro <0,001%; clock, coarse counter, FIFO, AXI tutti funzionanti.
+- **TDC, PPS**: `input_sel=1`, 5 intervalli consecutivi = 375 000 000
+  conteggi coarse esatti (**0 ppm** di errore).
+- **TDC, code-density**: range attivo centrato (es. 669-1246 su 1536, varia
+  leggermente da build a build per la sensibilità del ring alla P&R), **non
+  incollato a nessun estremo** — la firma di una cattura sana.
+- **TDC, calibrazione**: tabella `delta_ps[fine]` costruita da 130k+ campioni,
+  **autoconsistente** (Σ width_ps = 2666,667 ps = T_periodo esatto),
+  **monotona crescente**, correzioni reali fino a ~2600 ps applicate a
+  timestamp di prova. Procedura e codice in `wr_node_panel.ipynb` sezione 12.
 
-1. `kr260_wr_sdm_app_v16` → copiare in `/lib/firmware/xilinx/` a bordo
-   (`xmutil unloadapp` / `loadapp`, verificare timestamp `/dev/uio*`).
-2. Verifica lampo: leggere `0xA0050000` (hash attesi) e `0xA0060004`
-   (mmcm_locked a link su).
-3. Bring-up WRPC dal notebook (`wr_node_panel.ipynb`, sezione 2 in poi — la
-   cella carica `APP="kr260_wr_sdm_app_v15"` di default, cambiare in v16 se si
-   vuole testare su questa revisione) → poi autotest TDC su PPS (`input_sel=1`,
-   10 stamp devono distare 375e6 conteggi ±1 = 1 s esatto).
-4. Code-density con `input_sel=2` (ring oscillator): verificare che
-   l'istogramma sia disteso sui 768 tap, non concentrato.
-5. Aggiungere le celle al `wr_node_panel.ipynb` (lettura build_id nel pannello,
-   sezione TDC con istogramma di calibrazione).
+**Percorso per arrivare qui** (utile se il sintomo si ripresenta): tre ipotesi
+smentite in sequenza (sorgente di calibrazione, doppio stadio di
+registrazione, polarità di `CARRY8`) prima di trovare la causa vera — la
+catena a 768 tap propagava più in fretta del periodo di campionamento
+(2,667 ns), quasi ogni campione la trovava già satura. Raddoppiare a 1536 tap
+(`N_C8=192`) ha risolto. **Trappola incontrata nel farlo**: cambiare solo il
+*default* di un parametro di un module_ref (non l'interfaccia) non basta a
+farlo recepire da Vivado — la cache `project_1.gen/.../mref/<nome>/` va
+cancellata comunque, altrimenti si builda pulito ma con il vecchio valore
+(visto con `TAPS` che leggeva ancora 768 dopo una build "riuscita").
+
+## Se si riparte da qui
+
+1. `kr260_wr_sdm_app_v17` è già a bordo (`/lib/firmware/xilinx/`) e nel
+   notebook (`APP = "kr260_wr_sdm_app_v17"` in sezione 2).
+2. Bring-up WRPC dal notebook (sezione 5) per riavere `TRACK_PHASE` e poter
+   ripetere l'autotest PPS (sezione 11a).
+3. Sezioni 10-12 del notebook fanno tutto il resto: build_id, monitor TDC,
+   autotest PPS, code-density, calibrazione — vedi lì per l'uso pratico.
+4. Aperto ma non urgente: usare `tdc_calibrated_ps()` su una sorgente esterna
+   vera (PMOD, non solo ring/PPS) per una validazione end-to-end completa.
