@@ -2,29 +2,30 @@
 
 // Linea di ritardo a catena di carry (CARRY8, UltraScale+) per TDC.
 // Il segnale entra dal CI del primo CARRY8 e si propaga verso l'alto in modalita'
-// propagate (S=FF, DI=00): O[k] fotografa lo stato della catena al tap k.
-// UN SOLO rank di FF (ASYNC_REG) + popcount pipelinato bubble-tolerant:
-//   fine_o = numero di tap a 1 = da quanto tempo (in tap) e' arrivato il fronte
-//   rispetto al fronte di clk che campiona. Tap tipico US+ ~4-6 ps.
+// propagate (S=FF, DI=00). UN SOLO rank di FF (ASYNC_REG) + popcount pipelinato
+// bubble-tolerant: fine_o = numero di tap raggiunti dal fronte, rispetto al
+// fronte di clk che campiona.
 //
-// ATTENZIONE (lezione del 21/7/2026, trovata su hardware): con un SECONDO
-// stadio di registrazione prima del popcount, il code-density test risultava
-// concentrato sistematicamente vicino alla saturazione (fine~=NT), su
-// QUALSIASI sorgente (anche un ring oscillator libero, incommensurabile per
-// costruzione) — quindi non era un problema della sorgente. Causa: la catena
-// di carry dedicato satura in ~1-3 ns (decine di ps/CARRY8), MENO del ciclo
-// di clk_i (2.667 ns @375MHz); un secondo stadio di registrazione aggiunge
-// pero' un intero ciclo di ritardo prima che il vettore venga anche solo
-// usato — per allora il fronte ha gia' finito di propagarsi ovunque: non si
-// misura piu' "dove" era il fronte, si fotografa uno stato gia' saturo.
-// Un solo registro diretto sul vettore grezzo e' la pratica standard nei TDC
-// a catena di carry: si accetta metastabilita' occasionale sul singolo bit
-// vicino alla transizione (rumore di poche unita' sull'LSB, non un guasto
-// funzionale — anzi e' li' che vive l'informazione fine utile).
-//
-// Rivelazione hit sul tap 0 (il primo a salire): serve che l'ingresso torni
-// basso prima del fronte successivo (dead time 1 ciclo) — ok per PPS e
-// sorgenti di calibrazione fino a qualche decina di MHz.
+// ⚠️ POLARITA' (bug trovato il 21/7/2026 via simulazione xsim, NON su
+// hardware — vedi sim/tb_polarity.v, sim/tb_delayline{2,3,4}.v): il modello
+// ufficiale Xilinx di CARRY8 (unisims/CARRY8.v) fa `O = S_in ^ CO_fb`; con
+// S=8'hFF (propagate costante) questo da' **O[i] = NOT(CI)**, non O[i]=CI
+// come assunto nella prima stesura. A riposo la catena leggeva TUTTO A 1
+// (fine=NT, non 0!), durante un hit sostenuto TUTTO A 0 — e la rivelazione
+// del fronte (salita di therm_r1[0]) scattava sulla DISCESA dell'ingresso
+// vero, non sulla salita. Risultato pratico: ogni campione fotografava uno
+// stato gia' assestato invece di un fronte a meta' propagazione — combacia
+// con `fine=768` su TUTTI i campioni del test PPS del 21/7 (non era rumore).
+// **Fix**: si inverte `tap` al momento della cattura (`therm_r1 <= ~tap`),
+// cosi' tutto il resto (popcount, edge-detect su therm_r1[0]) torna a
+// funzionare con la semantica originaria (0=riposo, 1=fronte arrivato) senza
+// toccare nient'altro.
+// NB: due ipotesi precedenti (sorgente di calibrazione non incommensurabile;
+// doppio stadio di registrazione) sono state provate e SMENTITE sul ferro —
+// non c'entravano. Questo fix di polarita' e' una correzione logica vera,
+// ma il modello unisim ha ritardo ZERO dichiarato su ogni tap: la sim NON
+// dice se la catena reale e' troppo veloce rispetto al periodo di
+// campionamento (2.667 ns) — quello va verificato di nuovo sul ferro.
 //
 // La catena si piazza da sola in colonna (CO->CI dedicato); DONT_TOUCH evita
 // che la synth la ottimizzi via.
@@ -59,9 +60,11 @@ module tdc_delayline #(
     endgenerate
 
     // --- singolo rank di cattura, diretto sul vettore grezzo -------------
+    // invertito: CARRY8 in propagate da' O=NOT(CI), qui si torna alla
+    // semantica 0=riposo/1=fronte-arrivato (vedi nota di polarita' sopra)
     (* ASYNC_REG = "true", DONT_TOUCH = "true" *) reg [NT-1:0] therm_r1;
     always @(posedge clk_i) begin
-        therm_r1 <= tap;
+        therm_r1 <= ~tap;
     end
 
     // --- rivelazione del fronte -----------------------------------------
