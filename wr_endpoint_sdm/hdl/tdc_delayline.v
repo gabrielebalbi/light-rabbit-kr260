@@ -36,7 +36,7 @@ module tdc_delayline #(
     input  wire                    hit_i,     // ingresso asincrono da timestampare
     input  wire [43:0]             coarse_i,  // contatore coarse (dominio clk_i)
     output reg                     stamp_valid_o,  // 1 ciclo: fine/coarse validi
-    output reg  [9:0]              fine_o,         // popcount dei tap (0..N_C8*8)
+    output reg  [10:0]             fine_o,         // popcount dei tap (0..N_C8*8); 11 bit -> N_C8 fino a 255
     output reg  [43:0]             coarse_o        // coarse al ciclo di cattura
 );
     localparam integer NT = N_C8*8;
@@ -102,7 +102,7 @@ module tdc_delayline #(
     end
 
     // stadio 3: somma finale (NG termini)
-    reg [9:0] sum3;
+    reg [10:0] sum3;
     integer k;
     always @(*) begin
         sum3 = 10'd0;

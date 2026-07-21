@@ -15,9 +15,11 @@
 //                       scrittura con bit4=1 inverte la linea sw -> 1 fronte)
 //   0x04  STATUS   r/o  [0] mmcm_locked | [1] fifo_empty | [2] ovfl (sticky,
 //                       clear su lettura) | [31:16] fifo_count
-//   0x08  TS_LO    r/o  {coarse[21:0], fine[9:0]} — la lettura fa pop e
+//   0x08  TS_LO    r/o  {coarse[20:0], fine[10:0]} — la lettura fa pop e
 //                       congela TS_HI del medesimo stamp
-//   0x0C  TS_HI    r/o  {seq[7:0], 2'b00, coarse[43:22]}
+//   0x0C  TS_HI    r/o  {seq[7:0], 1'b0, coarse[43:21]}
+//   (formato TS_LO/TS_HI cambiato il 21/7/2026: fine passato da 10 a 11 bit
+//   per la catena allungata a 192 CARRY8 = 1536 tap, vedi sotto)
 //   0x10  TAPS     r/o  numero di tap della linea (per la calibrazione)
 //   0x14  CLK_HZ   r/o  frequenza clock TDC in Hz
 //   0x18  CNT_HITS r/o  conteggio hit totale (wrap 32 bit, anche a FIFO piena)
@@ -33,9 +35,19 @@
 // il 20/7/2026: essendo periodica e derivata dallo stesso albero di
 // riferimento della scheda del clock TDC, dava un istogramma concentrato in
 // un quarto della catena invece che uniforme (verificato su hardware, anche
-// con fronti isolati -> non era un artefatto di polling/FIFO).
+// con fronti isolati -> non era un artefatto di polling/FIFO). Il 21/7/2026
+// anche il fix di polarita' di CARRY8 (O=NOT(CI), vedi tdc_delayline.v) e'
+// stato verificato SENZA EFFETTO sullo spread: fine restava concentrato in
+// alto (mai sotto ~564/768) con qualunque sorgente e qualunque polarita'.
+// Ipotesi corrente: il tempo di transito reale della catena a 96 CARRY8/768
+// tap e' piu' corto del periodo di campionamento (2.667 ns @375MHz) -> quasi
+// ogni campione arriva a catena gia' satura. N_C8 raddoppiato a 192/1536 tap
+// per allungare il tempo di transito totale: se il "pavimento" dei valori
+// osservati si sposta proporzionalmente (stessa frazione ~73%), la teoria e'
+// falsa; se lo spread migliora, e' confermata. fine_o passato da 10 a 11 bit
+// (768 sforerebbe 10 bit solo con N_C8>127; a 192 servono comunque 11 bit).
 module tdc_carry #(
-    parameter integer N_C8         = 96,
+    parameter integer N_C8         = 192,
     parameter integer TDC_CLK_HZ   = 375_000_000,
     parameter integer C_S_AXI_DATA_WIDTH = 32,
     parameter integer C_S_AXI_ADDR_WIDTH = 8
@@ -117,7 +129,7 @@ module tdc_carry #(
     always @(posedge clk_tdc) coarse_cnt <= coarse_cnt + 1;
 
     wire        st_valid;
-    wire [9:0]  st_fine;
+    wire [10:0] st_fine;
     wire [43:0] st_coarse;
     tdc_delayline #(.N_C8(N_C8)) u_dl (
         .clk_i         (clk_tdc),
@@ -178,8 +190,9 @@ module tdc_carry #(
 
     // ------------------------------------------------------------------
     // FIFO asincrona 64 bit clk_tdc -> aclk (XPM)
+    // layout: {seq(8), pad(1), coarse(44), fine(11)} = 64 bit
     // ------------------------------------------------------------------
-    wire [63:0] fifo_din = {seq_cnt, 2'b00, st_coarse, st_fine};
+    wire [63:0] fifo_din = {seq_cnt, 1'b0, st_coarse, st_fine};
     wire [63:0] fifo_dout;
     wire fifo_full, fifo_empty, fifo_wr_rst_busy, fifo_rd_rst_busy;
     reg  fifo_rd_en;
@@ -275,8 +288,9 @@ module tdc_carry #(
                                               ovfl_a, fifo_empty, lock_a};
                     TSLO_OFF: begin
                         // pop + congela la meta' alta dello stesso stamp
-                        s_axi_rdata <= {fifo_dout[31:10], fifo_dout[9:0]};
-                        ts_hi_hold  <= {fifo_dout[63:56], 2'b00, fifo_dout[53:32]};
+                        // {coarse[20:0], fine[10:0]} = fifo_dout[31:0] diretto
+                        s_axi_rdata <= fifo_dout[31:0];
+                        ts_hi_hold  <= {fifo_dout[63:56], 1'b0, fifo_dout[54:32]};
                         if (!fifo_empty) fifo_rd_en <= 1;
                     end
                     TSHI_OFF: s_axi_rdata <= ts_hi_hold;
